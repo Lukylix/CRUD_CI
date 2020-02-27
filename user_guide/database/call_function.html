@@ -428,10 +428,10 @@
 <h2>$this-&gt;db-&gt;call_function();<a class="headerlink" href="#this-db-call-function" title="Permalink to this headline">¶</a></h2>
 <p>This function enables you to call PHP database functions that are not
 natively included in CodeIgniter, in a platform independent manner. For
-example, let’s say you want to call the mysql_get_client_info()
+example, let’s say you want to call the mysql_getClient_info()
 function, which is <strong>not</strong> natively supported by CodeIgniter. You could
 do so like this:</p>
-<div class="highlight-ci"><div class="highlight"><pre><span></span><span class="nv">$this</span><span class="o">-&gt;</span><span class="na">db</span><span class="o">-&gt;</span><span class="na">call_function</span><span class="p">(</span><span class="s1">&#39;get_client_info&#39;</span><span class="p">);</span>
+<div class="highlight-ci"><div class="highlight"><pre><span></span><span class="nv">$this</span><span class="o">-&gt;</span><span class="na">db</span><span class="o">-&gt;</span><span class="na">call_function</span><span class="p">(</span><span class="s1">&#39;getClient_info&#39;</span><span class="p">);</span>
 </pre></div>
 </div>
 <p>You must supply the name of the function, <strong>without</strong> the mysql_

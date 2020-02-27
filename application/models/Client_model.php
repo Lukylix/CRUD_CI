@@ -21,7 +21,7 @@ class Client_model extends CI_Model
     //   get by id
     /////////////////
 
-    public function get_client($id = null)
+    public function getClient($id = null)
     {
         if ($id <= 0 || $id === null) {
             $query = $this->db->get('client');
@@ -45,27 +45,4 @@ class Client_model extends CI_Model
         $this->db->where('idClient', $id);
         return $this->db->update('client', $data);
     }
-    //////////////////////////////
-    ///      GET BY ID        ///
-    ////////////////////////////
-
-    //////////
-    //get clients
-    /////////
-
-
-
-    //////////////////////////////
-    ///    SETTER + UPDATE    ///
-    ////////////////////////////
-
-    ///////
-    //set clients
-    ///////
-
-
-    //////////////////////////////
-    ///      DELETE           ///
-    ////////////////////////////
-
 }

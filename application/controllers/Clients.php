@@ -25,7 +25,7 @@ class Clients extends CI_Controller
     {
 
         /// Traitement des données
-        $data['news'] = $this->elements_model->get_client();
+        $data['news'] = $this->elements_model->getClient();
         $data['title'] = "News archy";
 
         ///chargement des vues
@@ -43,7 +43,7 @@ class Clients extends CI_Controller
 
     public function view($id = null)
     {
-        $data['clients'] = $this->client_model->get_client($id);
+        $data['clients'] = $this->client_model->getClient($id);
         //display_r($data['clients']);
 
         if (empty($data['clients'])) {
@@ -78,6 +78,27 @@ class Clients extends CI_Controller
             redirect(base_url('clients'));
         }
     }
+    public function update($id)
+    {
 
-    
+        $this->load->helper('form');
+        $this->load->library('form_validation');
+        $data['title'] = 'Mise a jour';
+        $data['client'] = $this->client_model->getClient($id);
+        //$this->form_validation->set_rules('fieldname', 'fieldlabel', 'trim|required|min_length[5]|max_length[12]');
+        $this->form_validation->set_rules('nomClient', 'Nom Client', 'required');
+        $this->form_validation->set_rules('numClient', 'Num Client', 'required');
+        $this->form_validation->set_rules('emailClient', 'Email Client', 'required');
+        $this->form_validation->set_rules('adresseClient', 'Adresse Client', 'required');
+        $this->form_validation->set_rules('telClient', 'Tel Client', 'required');
+
+        if ($this->form_validation->run() === FALSE) {
+            $this->load->view('templates/header', $data);
+            $this->load->view('clients/update_view', $data);
+            $this->load->view('templates/footer');
+        }else{
+            $this->client_model->setClient($id);
+            redirect(base_url("client/$id"));
+        }
+    }
 }

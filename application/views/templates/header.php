@@ -6,12 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link rel="stylesheet" href="https://bootswatch.com/4/cosmo/bootstrap.min.css">
-    <title>tutu</title>
+    <title><?php echo $title ;?></title>
 </head>
 
 <body>
-<!-- 
-<h1>
-    <?php //echo $title; ?>
-</h1> -->
-

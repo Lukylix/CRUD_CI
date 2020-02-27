@@ -56,17 +56,11 @@ $route['404_override'] = '';
 $route['translate_uri_dashes'] = FALSE;
 
 
-$route['news'] = 'news';
-$route['news/(:any)'] = 'news/view/$1';
-$route['news/update/(:any)'] = 'news/update/$1';
-$route['news/edit/(:any)'] = 'news/edit/$1';
-$route['news/delete/(:any)'] = 'news/delete/$1';
-$route['news/create'] = 'news/create';
-
 $route['home'] = 'pages/view';
 $route['home/(:any)'] = 'pages/view/$1';
 
 $route['client/create'] = 'clients/create';
+$route['client/update/(:any)'] = 'clients/update/$1';
 $route['clients'] = 'clients/view';
 
 $route['client'] = 'clients/view';
