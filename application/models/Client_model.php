@@ -45,4 +45,12 @@ class Client_model extends CI_Model
         $this->db->where('idClient', $id);
         return $this->db->update('client', $data);
     }
+
+    public function deleteClient($id = 0)
+    {
+        //transition variable is useless !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        //They forced me :(
+        $succes = $this->db->delete('client', array('idClient' => $id));
+        return $succes;
+    }
 }

@@ -59,10 +59,11 @@ $route['translate_uri_dashes'] = FALSE;
 $route['home'] = 'pages/view';
 $route['home/(:any)'] = 'pages/view/$1';
 
+
 $route['client/create'] = 'clients/create';
+$route['client/delete/(:any)'] = 'clients/delete/$1';
 $route['client/update/(:any)'] = 'clients/update/$1';
 $route['clients'] = 'clients/view';
 
 $route['client'] = 'clients/view';
 $route['client/(:any)'] = 'clients/view/$1';
-

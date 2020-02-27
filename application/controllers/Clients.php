@@ -101,4 +101,8 @@ class Clients extends CI_Controller
             redirect(base_url("client/$id"));
         }
     }
+    public function delete($id ){
+        $this->client_model->deleteClient($id);
+        redirect(base_url("clients"));
+    }
 }
