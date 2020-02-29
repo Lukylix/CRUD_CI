@@ -51,7 +51,7 @@ defined('BASEPATH') or exit('No direct script access allowed');
 */
 
 
-$route['default_controller'] = 'clients/view';
+$route['default_controller'] = 'Client_Controller/view';
 $route['404_override'] = '';
 $route['translate_uri_dashes'] = FALSE;
 
@@ -60,10 +60,10 @@ $route['home'] = 'pages/view';
 $route['home/(:any)'] = 'pages/view/$1';
 
 
-$route['client/create'] = 'clients/create';
-$route['client/delete/(:any)'] = 'clients/delete/$1';
-$route['client/update/(:any)'] = 'clients/update/$1';
-$route['clients'] = 'clients/view';
+$route['client/create'] = 'Client_Controller/update';
+$route['client/delete/(:any)'] = 'Client_Controller/delete/$1';
+$route['client/update/(:any)'] = 'Client_Controller/update/$1';
+$route['clients'] = 'Client_Controller/view';
 
-$route['client'] = 'clients/view';
-$route['client/(:any)'] = 'clients/view/$1';
+$route['client'] = 'Client_Controller/view';
+$route['client/(:any)'] = 'Client_Controller/view/$1';
