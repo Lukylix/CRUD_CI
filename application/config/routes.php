@@ -49,21 +49,18 @@ defined('BASEPATH') or exit('No direct script access allowed');
 | Examples:	my-controller/index	-> my_controller/index
 |		my-controller/my-method	-> my_controller/my_method
 */
+//Config for regex tables name
+include "custom/tables.php";
 
 
-$route['default_controller'] = 'Client_Controller/view';
+
 $route['404_override'] = '';
 $route['translate_uri_dashes'] = FALSE;
 
+$route["$tablesRegex/create"] = 'Entity_Controller/update/$1';
+$route["$tablesRegex/(:num)/delete"] = 'Entity_Controller/delete/$1/$2';
+$route["$tablesRegex/(:num)/update"] = 'Entity_Controller/update/$1/$2';
 
-$route['home'] = 'pages/view';
-$route['home/(:any)'] = 'pages/view/$1';
-
-
-$route['client/create'] = 'Client_Controller/update';
-$route['client/delete/(:any)'] = 'Client_Controller/delete/$1';
-$route['client/update/(:any)'] = 'Client_Controller/update/$1';
-$route['clients'] = 'Client_Controller/view';
-
-$route['client'] = 'Client_Controller/view';
-$route['client/(:any)'] = 'Client_Controller/view/$1';
+$route["$tablesRegex/(:num)"] = 'Entity_Controller/view/$1/$2';
+$route["$tablesRegex"] = 'Entity_Controller/view/$1/';
+$route['default_controller'] = 'Entity_Controller/view/client';
