@@ -4,66 +4,53 @@ class Factory
 {
   function model(string $name, array $data = [], $delete = false)
   {
-    include 'application/config/custom/tables.php';
-    $GLOBALS['idPropertyName'] = $config['possibleTables'][$name];
-
-    return (new class ($data) extends CI_Model
+    return (new class ($data, $name) extends CI_Model
     {
-      function __construct(array $data)
+      function __construct(array $data, string $name)
       {
+        include 'application/config/custom/tables.php';
+        define('idPropertyName', $config['possibleTables'][$name]);
+
         $this->hydrate($data);
+
+        define('asValidId', ($this->__get(idPropertyName) > 0 && $this->__get(idPropertyName) != null) ? true : false);
       }
 
       function action($name, $delete)
       {
-        $asId = $this->__get($GLOBALS['idPropertyName']);
-        $asId = isset($asId) && $asId != null ? 'true' : false;
         $numProperties = count(get_object_vars($this));
-
-        if ($asId && $delete) return $this->delete($name);
-        if ($numProperties > 1 || ($numProperties > 0 && !$asId)) return $this->set($name);
+        if (asValidId && $delete) return $this->delete($name);
+        if ($numProperties > 1 || ($numProperties > 0 && !asValidId)) return $this->set($name);
         return $this->get($name);
       }
 
       function get($tableName)
       {
-        $CI = &get_instance();
-        $CI->load->database();
-
-        $idVal = $this->__get($GLOBALS['idPropertyName']);
-        if ($idVal <= 0 || $idVal == null) {
-          $query = $CI->db->get($tableName);
-          return $query->result_array();
-        }
-        $query = $CI->db->get_where($tableName, array($GLOBALS['idPropertyName'] => $idVal));
-        return $query->row_array();
+        if (!asValidId) return ($this->db()->get($tableName))->result_array();
+        return ($this->db()->get_where($tableName, array(idPropertyName => $this->__get(idPropertyName))))->row_array();
       }
+
       function delete($tableName)
       {
-        $CI = &get_instance();
-        $CI->load->database();
-
-        $idVal = $this->__get($GLOBALS['idPropertyName']);
-
-        return $CI->db->delete($tableName, array($GLOBALS['idPropertyName'] => $idVal));;
+        return $this->db()->delete($tableName, array(idPropertyName => $this->__get(idPropertyName)));
       }
+
       function set($tableName)
       {
-        $CI = &get_instance();
-        $CI->load->database();
-
-        $idVal = $this->__get($GLOBALS['idPropertyName']);
-        if ($idVal <= 0 || $idVal == null) {
-          return $CI->db->insert($tableName, $this);
-        }
-        return $CI->db->update($tableName, $this, array($GLOBALS['idPropertyName'] => $this->__get($GLOBALS['idPropertyName'])));
+        if (!asValidId) return $this->db()->insert($tableName, $this);
+        return $this->db()->update($tableName, $this, array(idPropertyName => $this->__get(idPropertyName)));
       }
 
       private function hydrate(array $data)
       {
-        foreach ($data as $property => $value) {
-          $this->{$property} = $value;
-        }
+        foreach ($data as $property => $value) $this->{$property} = $value;
+      }
+
+      private function db()
+      {
+        $CI = &get_instance();
+        $CI->load->database();
+        return $CI->db;
       }
 
       function __get($property)
@@ -73,11 +60,8 @@ class Factory
 
       function __set($property, $value)
       {
-        if ($property != $GLOBALS['idPropertyName'] || count(get_object_vars($this)) < 1) {
-          $this->{$property} = $value;
-        }
+        if ($property != idPropertyName || count(get_object_vars($this)) < 1) $this->{$property} = $value;
       }
-
     })->action($name, $delete);
   }
 }
