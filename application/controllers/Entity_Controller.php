@@ -20,9 +20,7 @@ class Entity_Controller extends CI_Controller
         $data['entities'] = $this->factory->model($entityName, $id > 0 ? [$this->tableIds[$entityName] => $id] : []);
         $data['table']['name'] = $entityName;
         $data['table']['id'] = $this->tableIds[$entityName];
-        if (empty($data['entities'])) {
-            show_404();
-        }
+        
         $multipleEntity = isset($data['entities'][0]) ? true : false;
         $data['title'] = ($multipleEntity ? 'Nos ' . ucfirst($entityName) . 's' : ucfirst($entityName));
         $this->load->view('templates/header', $data);
@@ -38,25 +36,18 @@ class Entity_Controller extends CI_Controller
         $this->load->helper('form');
         $this->load->library('form_validation');
 
-        //TO Do Function to get only one entity for performances reasons
-
         if ($id > 0) {
             $data['entity'] = $this->factory->model($entityName, [$this->tableIds[$entityName] => $id]);
         } else {
-            $data['entity'] =  $this->factory->model($entityName);
-            if (is_array($data['entity'])) {
-                //We select a single entity 
-                foreach ($data['entity'] as $value) {
-                    $data['entity'] = $value;
-                    break;
-                }
-            }
+            //TODO Factory function to get only one entity for performances reasons
+            $data['entity'] =  $this->factory->model($entityName)[0];
             //We remove value of the selected entity
             foreach ($data['entity'] as $key => &$value) $value = '';
         }
 
         unset($data['entity'][$this->tableIds[$entityName]]);
         foreach ($data['entity'] as $input => $val) {
+            //Turn camelCase into words
             $displayString = implode(' ', preg_split('/(?=[A-Z])/', ucfirst($input)));
             $this->form_validation->set_rules($input, $displayString, 'required');
         }
