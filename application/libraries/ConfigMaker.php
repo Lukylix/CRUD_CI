@@ -2,15 +2,22 @@
 
 class ConfigMaker
 {
-  function load()
+  private $configPath;
+  function __construct()
   {
 
-    $configPath = ('application/config/custom/tables.php');
-    include($configPath);
-    if ($config['tablesConfigGenerated']) return;
-    $tablesConstrains = $this->getTablesConstraint();
+    $this->configPath = ('application/config/custom/tables.php');
+    include($this->configPath);
+    if ($config['tablesConfigGenerated']) {
+      $this->tables = $config['tables'];
+      return;
+    }
+    $this->load();
+  }
 
-    $configContent = file_get_contents($configPath);
+  function load()
+  {
+    $configContent = file_get_contents($this->configPath);
     $newContent = preg_replace(
       [
         '/\$config\[[\'"]tablesConfigGenerated[\'"]\]\s?=\s?(false)\s?;(.|\n|\r|\t)*/',
@@ -23,7 +30,7 @@ class ConfigMaker
         "\$config['tablesConfigGenerated'] = true;\n\n" .
           "\$config['tablesRegex'] = \"" . $this->regex() . "\";\n\n" .
           "\$config['tablesId'] = " . var_export($this->tablesId(), true) . ";\n\n" .
-          "\$config['tables'] = " . var_export($tablesConstrains, true) . ";\n\n",
+          "\$config['tables'] = " . var_export($this->Tables(), true) . ";\n\n",
         "[",
         "],",
         '=> ',
@@ -31,11 +38,11 @@ class ConfigMaker
       ],
       $configContent
     );
-    file_put_contents($configPath, $newContent);
+    file_put_contents($this->configPath, $newContent);
     return $newContent;
   }
 
-  private function getTablesConstraint()
+  private function Tables()
   {
     $colmuns = ($this->db()->query("SELECT TABLE_NAME, COLUMN_NAME, COLUMN_KEY AS `KEY` ,COLUMN_TYPE AS `TYPE`, IS_NULLABLE, EXTRA
     FROM INFORMATION_SCHEMA.COLUMNS 
@@ -50,24 +57,23 @@ class ConfigMaker
     }
 
     $FKeys = ($this->db()->query("SELECT TABLE_NAME, COLUMN_NAME,REFERENCED_TABLE_NAME,REFERENCED_COLUMN_NAME
-    FROM information_schema.KEY_COLUMN_USAGE
-    WHERE TABLE_SCHEMA = DATABASE()
-    AND REFERENCED_TABLE_SCHEMA = DATABASE()"))->result_array();
+      FROM information_schema.KEY_COLUMN_USAGE
+      WHERE TABLE_SCHEMA = DATABASE()
+      AND REFERENCED_TABLE_SCHEMA = DATABASE()"))->result_array();
 
     foreach ($FKeys as $key) {
       $result[$key['TABLE_NAME']][$key['COLUMN_NAME']]['KEY'] = [];
       $result[$key['TABLE_NAME']][$key['COLUMN_NAME']]['KEY']['TABLE'] = $key['REFERENCED_TABLE_NAME'];
       $result[$key['TABLE_NAME']][$key['COLUMN_NAME']]['KEY']['COLUMN'] = $key['REFERENCED_COLUMN_NAME'];
     }
-    $this->result = $result;
+    $this->tables = $result;
     return $result;
   }
 
   private function tablesId()
   {
-    $tables = $this->result;
     $result = [];
-    foreach ($tables as $table => $colmuns) {
+    foreach ($this->tables as $table => $colmuns) {
       foreach ($colmuns as $colmun => $constrains) {
         if ($constrains['KEY'] == 'PRI') {
           $result[$table]['KEY'] = $colmun;
@@ -76,13 +82,23 @@ class ConfigMaker
         }
       }
     }
+    $this->tablesId = $result;
+    return $result;
+  }
+
+  function getColumns(string $tableName)
+  {
+    if (!isset($this->tables[$tableName])) return;
+    foreach ($this->tables[$tableName] as $colmunName => $constrains) {
+      $result[$colmunName] = '';
+    }
     return $result;
   }
 
   private function regex()
   {
     $tablesRegex = '(';
-    foreach ($this->result as $table => $id) {
+    foreach ($this->tables as $table => $id) {
       $tablesRegex .= (isset($firstLooped) ? '|' : $firstLooped = false) . $table . 's?';
     }
     $tablesRegex .= ')';

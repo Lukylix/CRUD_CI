@@ -14,7 +14,6 @@ class Entity_Controller extends CI_Controller
 
         $this->load->library('Factory');
         $this->load->library('ConfigMaker');
-        $this->configmaker->load();
         $this->config->load('custom/tables');
         $this->tablesId = $this->config->item('tablesId');
         $this->tables = $this->config->item('tables');
@@ -26,7 +25,7 @@ class Entity_Controller extends CI_Controller
         $data['table']['name'] = $entityName;
         $data['table']['id'] = $this->tablesId[$entityName]['KEY'];
 
-        $multipleEntity = isset($data['entities'][0]) ? true : false;
+        $multipleEntity = isset($data['entities'][0]) || $data['entities'] == [] ? true : false;
         $data['title'] = ($multipleEntity ? 'Nos ' . ucfirst($entityName) . 's' : ucfirst($entityName));
         $this->load->view('templates/header', $data);
         $this->load->view(($multipleEntity ? 'entity/all' : 'entity/uniq'));
@@ -44,17 +43,12 @@ class Entity_Controller extends CI_Controller
         if ($id > 0) {
             $data['entity'] = $this->factory->model($entityName, [$this->tablesId[$entityName]['KEY'] => $id]);
         } else {
-            //TODO Factory function to get only one entity for performances reasons
-            $data['entity'] =  $this->factory->model($entityName)[0];
-            //We remove value of the selected entity
-            foreach ($data['entity'] as $key => &$value) $value = '';
+            $data['entity'] =  $this->configmaker->getColumns($entityName);
         }
 
         unset($data['entity'][$this->tablesId[$entityName]['KEY']]);
         foreach ($data['entity'] as $input => $val) {
-            //Turn camelCase into words
-            $displayString = implode(' ', preg_split('/(?=[A-Z])/', ucfirst($input)));
-            $this->form_validation->set_rules($input, $displayString, 'required');
+            $this->form_validation->set_rules($input, $input, 'required');
         }
         if ($this->form_validation->run() === FALSE) {
             $this->load->view('templates/header', $data);

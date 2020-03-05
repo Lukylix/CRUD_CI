@@ -38,8 +38,8 @@ class Factory
 
       function set()
       {
-        if (!asValidId) return $this->db()->insert(selecTable, $this);
-        return $this->db()->update(selecTable, $this, array(idPropertyName => $this->__get(idPropertyName)));
+        if (!asValidId) return $this->db()->insert(selecTable, $this->db()->escape($this));
+        return $this->db()->update(selecTable, $this->db()->escape($this), array(idPropertyName => $this->__get(idPropertyName)));
       }
 
       private function hydrate(array $data)

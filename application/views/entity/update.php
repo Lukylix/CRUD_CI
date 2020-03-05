@@ -4,7 +4,7 @@
   echo (form_open($_SERVER['REQUEST_URI']));
   foreach ($entity as $column => $value) :
   ?>
-    <label for="<?= $column ?>"><?= $column ?></label>
+    <label for="<?= $column ?>"><?= implode(' ', preg_split('/(?=[A-Z])|[_]/', ucfirst($column))); ?></label>
     <input type="text" name="<?= $column ?>" value="<?= $value; ?>" />
   <?php endforeach; ?>
 
