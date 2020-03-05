@@ -12,21 +12,21 @@ class Entity_Controller extends CI_Controller
         $this->load->helper('url_helper');
         $this->load->database();
 
+        $this->load->library('session');
         $this->load->library('Factory');
         $this->load->library('ConfigMaker');
-        $this->configmaker->load();
         $this->config->load('custom/tables');
         $this->tablesId = $this->config->item('tablesId');
         $this->tables = $this->config->item('tables');
     }
 
-    function view(string $entityName, $id = 0)
+    function view(string $entityName = 'client', $id = 0)
     {
         $data['entities'] = $this->factory->model($entityName, $id > 0 ? [$this->tablesId[$entityName]['KEY'] => $id] : []);
         $data['table']['name'] = $entityName;
         $data['table']['id'] = $this->tablesId[$entityName]['KEY'];
 
-        $multipleEntity = isset($data['entities'][0]) ? true : false;
+        $multipleEntity = isset($data['entities'][0]) || $data['entities'] == [] ? true : false;
         $data['title'] = ($multipleEntity ? 'Nos ' . ucfirst($entityName) . 's' : ucfirst($entityName));
         $this->load->view('templates/header', $data);
         $this->load->view(($multipleEntity ? 'entity/all' : 'entity/uniq'));
@@ -44,17 +44,12 @@ class Entity_Controller extends CI_Controller
         if ($id > 0) {
             $data['entity'] = $this->factory->model($entityName, [$this->tablesId[$entityName]['KEY'] => $id]);
         } else {
-            //TODO Factory function to get only one entity for performances reasons
-            $data['entity'] =  $this->factory->model($entityName)[0];
-            //We remove value of the selected entity
-            foreach ($data['entity'] as $key => &$value) $value = '';
+            $data['entity'] =  $this->configmaker->getColumns($entityName);
         }
 
         unset($data['entity'][$this->tablesId[$entityName]['KEY']]);
         foreach ($data['entity'] as $input => $val) {
-            //Turn camelCase into words
-            $displayString = implode(' ', preg_split('/(?=[A-Z])/', ucfirst($input)));
-            $this->form_validation->set_rules($input, $displayString, 'required');
+            $this->form_validation->set_rules($input, $input, 'required');
         }
         if ($this->form_validation->run() === FALSE) {
             $this->load->view('templates/header', $data);
@@ -73,7 +68,59 @@ class Entity_Controller extends CI_Controller
     }
     function delete(string $entityName, $id)
     {
-        $this->factory->model($entityName, [$this->tablesId[$entityName]['KEY'] => $id], true);
+        $this->factory->model($entityName, [$this->tablesId[$entityName]['KEY'] => $id], ['delete' => true]);
         redirect($entityName);
+    }
+    function register()
+    {
+        $this->load->helper('form');
+        $this->load->library('form_validation');
+        $data['title'] = 'Register';
+        $data['entity'] =  $this->configmaker->getColumns('user');
+        unset($data['entity'][$this->tablesId['user']['KEY']]);
+
+        foreach ($data['entity'] as $input => $val) {
+            $this->form_validation->set_rules($input, $input, 'required');
+        }
+        if ($this->form_validation->run() == false) {
+            $this->load->view('templates/header', $data);
+            $this->load->view('entity/update');
+            $this->load->view('templates/footer');
+        } else {
+            $post = $this->input->post(null);
+            unset($post['action'], $post['submit']);
+            $post['password'] = password_hash($post['password'], PASSWORD_BCRYPT);
+            $this->factory->model('user', $post);
+            echo $post['password'];
+        }
+    }
+    function login()
+    {
+        $this->load->helper('form');
+        $this->load->library('form_validation');
+        $data['title'] = 'Login';
+        $data['entity'] = ['identifier' => '', 'password' => ''];
+        foreach ($data['entity'] as $input => $val) {
+            $this->form_validation->set_rules($input, $input, 'required');
+        }
+        if ($this->form_validation->run() == false) {
+            $this->load->view('templates/header', $data);
+            $this->load->view('entity/update');
+            $this->load->view('templates/footer');
+        } else {
+            $post = $this->input->post(null);
+            $user = $this->factory->model('user', [], ['single' => true, 'or_where' => ['username =' => $post['identifier'], 'email =' => $post['identifier']]]);
+            if (password_verify($post['password'], $user['password'])) {
+                unset($user['password']);
+                $this->session->set_userdata(array_merge($user, ['logged' => true]));
+                return redirect();
+            }
+            redirect('login');
+        }
+    }
+    function logout()
+    {
+        session_destroy();
+        redirect($_SERVER['HTTP_REFERER']);
     }
 }

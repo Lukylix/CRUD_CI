@@ -1,9 +1,10 @@
 <div class="container">
   <h1><?php echo $title ?></h1>
   <table>
-    <?php foreach ($entities as $key => $value) : ?>
+    <?php
+    foreach ($entities as $key => $value) : ?>
       <tr>
-        <td><?php echo $key ?></td>
+        <td><?php echo implode(' ', preg_split('/(?=[A-Z])|[_]/', ucfirst($key))) ?></td>
         <td><?php echo $value ?></td>
       </tr>
     <?php endforeach; ?>

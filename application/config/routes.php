@@ -59,9 +59,13 @@ $route['404_override'] = '';
 $route['translate_uri_dashes'] = FALSE;
 
 $route["$tablesRegex/create"] = 'Entity_Controller/update/$1';
-$route["$tablesRegex/(:num)/delete"] = 'Entity_Controller/delete/$1/$2';
-$route["$tablesRegex/(:num)/update"] = 'Entity_Controller/update/$1/$2';
+$route["$tablesRegex/(:any)/delete"] = 'Entity_Controller/delete/$1/$2';
+$route["$tablesRegex/(:any)/update"] = 'Entity_Controller/update/$1/$2';
 
-$route["$tablesRegex/(:num)"] = 'Entity_Controller/view/$1/$2';
+$route["$tablesRegex/(:any)"] = 'Entity_Controller/view/$1/$2';
 $route["$tablesRegex"] = 'Entity_Controller/view/$1/';
-$route['default_controller'] = 'Entity_Controller/view/client';
+$route['default_controller'] = 'Entity_Controller/view';
+
+$route['register'] = 'Entity_Controller/register/';
+$route['login'] = 'Entity_Controller/login/';
+$route['logout'] = 'Entity_Controller/logout';

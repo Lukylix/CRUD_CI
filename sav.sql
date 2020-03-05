@@ -156,3 +156,12 @@ ALTER TABLE `commandeProduit`
   ADD CONSTRAINT `FK_CommandeProduit` FOREIGN KEY (`fk_commandeId`) REFERENCES `commande` (`idCommande`),
   ADD CONSTRAINT `FK_ProduitCommande` FOREIGN KEY (`fk_produitId`) REFERENCES `produit` (`idProduit`);
 COMMIT;
+
+DROP TABLE `user` ;
+CREATE TABLE `user`(
+  `id` INT(11) NOT NULL AUTO_INCREMENT,
+  `username` VARCHAR(15) NOT NULL,
+  `email` VARCHAR(320) NOT NULL,
+  `password` varchar(72) NOT NULL,
+  PRIMARY KEY (`id`)
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;
