@@ -2,49 +2,66 @@
 require_once("system/core/Model.php");
 class Factory
 {
-  function model(string $name, array $data = [], $delete = false)
+  function model(string $name, array $data = [], array $options = [])
   {
-    return (new class ($data, $name) extends CI_Model
+    return (new class ($name, $data, $options) extends CI_Model
     {
-      function __construct(array $data, string $name)
-      {
-        include 'application/config/custom/tables.php';
+      private $options;
+      private $tableName;
+      private $table;
+      private $idName;
+      private $asValidId;
 
-        define('tables', $config['tables']);
-        define('selecTable', $name);
-        define('idPropertyName', $config['tablesId'][$name]['KEY']);
-        $this->hydrate($data);
-        define('asValidId', ($this->__get(idPropertyName) > 0 && $this->__get(idPropertyName) != null) ? true : false);
+      private $entity;
+
+      function __construct(string $name, array $data, array $options)
+      {
+        foreach (['where' => [], 'or_where' => [], 'delete' => FALSE, 'single' => FALSE] as $option => $value)
+          if (!isset($options[$option])) $options[$option] = $value;
+        $this->options = $options;
+        $this->tableName = $name;
+        include 'application/config/custom/tables.php';
+        $this->table = $config['tables'][$this->tableName];
+        $this->idName = $config['tablesId'][$this->tableName]['KEY'];
+
+        $this->entity = new class ($this->verifyEntityData($data))
+        {
+          function __construct($data)
+          {
+            foreach ($data as $property => $value) $this->{$property} = $value;
+          }
+          function __get($property)
+          {
+            return property_exists($this, $property) ? $this->{$property} : NULL;
+          }
+        };
+        $this->asValidId = ($this->entity->__get($this->idName) != null && $this->entity->__get($this->idName) > 0) ? TRUE : FALSE;
       }
 
-      function action($delete)
+      function action()
       {
-        $numProperties = count(get_object_vars($this));
-        if (asValidId && $delete) return $this->delete();
-        if ($numProperties > 1 || ($numProperties > 0 && !asValidId)) return $this->set();
+        $numProperties = count(get_object_vars($this->entity));
+        if ($this->asValidId && $this->options['delete'] == TRUE) return $this->delete();
+        if ($numProperties > 1 || ($numProperties > 0 && !$this->asValidId)) return $this->set();
         return $this->get();
       }
 
       function get()
       {
-        if (!asValidId) return ($this->db()->get(selecTable))->result_array();
-        return ($this->db()->get_where(selecTable, array(idPropertyName => $this->__get(idPropertyName))))->row_array();
+        if (!$this->asValidId) return ((($this->db()->where($this->options['where']))->or_where($this->options['or_where']))
+          ->get($this->tableName))->{$this->options['single'] ? 'row_array' : 'result_array'}();
+        return ($this->db()->get_where($this->tableName, array($this->idName => $this->entity->__get($this->idName))))->row_array();
       }
 
       function delete()
       {
-        return $this->db()->delete(selecTable, array(idPropertyName => $this->__get(idPropertyName)));
+        return $this->db()->delete($this->tableName, array($this->idName => $this->entity->__get($this->idName)));
       }
 
       function set()
       {
-        if (!asValidId) return $this->db()->insert(selecTable, $this->db()->escape($this));
-        return $this->db()->update(selecTable, $this->db()->escape($this), array(idPropertyName => $this->__get(idPropertyName)));
-      }
-
-      private function hydrate(array $data)
-      {
-        foreach ($data as $property => $value) $this->{$property} = $value;
+        if (!$this->asValidId) return $this->db()->insert($this->tableName, $this->entity);
+        return $this->db()->update($this->tableName, $this->entity, array($this->idName => $this->entity->__get($this->idName)));
       }
 
       private function db()
@@ -54,18 +71,12 @@ class Factory
         return $CI->db;
       }
 
-      function __get($property)
+      function verifyEntityData(array $data)
       {
-        return property_exists($this, $property) ? $this->{$property} : NULL;
+        $result = $data;
+        foreach ($data as $column => $value) if (!isset($this->table[$column])) unset($result[$column]);
+        return $result;
       }
-
-      function __set($property, $value)
-      {
-        if (
-          isset(tables[selecTable][$property]) && 
-          ($property != idPropertyName || count(get_object_vars($this)) < 1)
-        ) $this->{$property} = $value;
-      }
-    })->action($delete);
+    })->action();
   }
 }

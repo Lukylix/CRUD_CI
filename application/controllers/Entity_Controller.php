@@ -12,6 +12,7 @@ class Entity_Controller extends CI_Controller
         $this->load->helper('url_helper');
         $this->load->database();
 
+        $this->load->library('session');
         $this->load->library('Factory');
         $this->load->library('ConfigMaker');
         $this->config->load('custom/tables');
@@ -19,7 +20,7 @@ class Entity_Controller extends CI_Controller
         $this->tables = $this->config->item('tables');
     }
 
-    function view(string $entityName, $id = 0)
+    function view(string $entityName = 'client', $id = 0)
     {
         $data['entities'] = $this->factory->model($entityName, $id > 0 ? [$this->tablesId[$entityName]['KEY'] => $id] : []);
         $data['table']['name'] = $entityName;
@@ -67,7 +68,59 @@ class Entity_Controller extends CI_Controller
     }
     function delete(string $entityName, $id)
     {
-        $this->factory->model($entityName, [$this->tablesId[$entityName]['KEY'] => $id], true);
+        $this->factory->model($entityName, [$this->tablesId[$entityName]['KEY'] => $id], ['delete' => true]);
         redirect($entityName);
+    }
+    function register()
+    {
+        $this->load->helper('form');
+        $this->load->library('form_validation');
+        $data['title'] = 'Register';
+        $data['entity'] =  $this->configmaker->getColumns('user');
+        unset($data['entity'][$this->tablesId['user']['KEY']]);
+
+        foreach ($data['entity'] as $input => $val) {
+            $this->form_validation->set_rules($input, $input, 'required');
+        }
+        if ($this->form_validation->run() == false) {
+            $this->load->view('templates/header', $data);
+            $this->load->view('entity/update');
+            $this->load->view('templates/footer');
+        } else {
+            $post = $this->input->post(null);
+            unset($post['action'], $post['submit']);
+            $post['password'] = password_hash($post['password'], PASSWORD_BCRYPT);
+            $this->factory->model('user', $post);
+            echo $post['password'];
+        }
+    }
+    function login()
+    {
+        $this->load->helper('form');
+        $this->load->library('form_validation');
+        $data['title'] = 'Login';
+        $data['entity'] = ['identifier' => '', 'password' => ''];
+        foreach ($data['entity'] as $input => $val) {
+            $this->form_validation->set_rules($input, $input, 'required');
+        }
+        if ($this->form_validation->run() == false) {
+            $this->load->view('templates/header', $data);
+            $this->load->view('entity/update');
+            $this->load->view('templates/footer');
+        } else {
+            $post = $this->input->post(null);
+            $user = $this->factory->model('user', [], ['single' => true, 'or_where' => ['username =' => $post['identifier'], 'email =' => $post['identifier']]]);
+            if (password_verify($post['password'], $user['password'])) {
+                unset($user['password']);
+                $this->session->set_userdata(array_merge($user, ['logged' => true]));
+                return redirect();
+            }
+            redirect('login');
+        }
+    }
+    function logout()
+    {
+        session_destroy();
+        redirect($_SERVER['HTTP_REFERER']);
     }
 }

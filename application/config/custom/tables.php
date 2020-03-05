@@ -3,39 +3,6 @@
 //This need to be false to regenerate this config file.
 $config['tablesConfigGenerated'] = true;
 
-$config['tablesRegex'] = "(commandeProduits?|commandes?|clients?|produits?)";
-
-$config['tablesId'] = [
-  'commandeProduit' => [
-    'KEY' => 'idCommandeProduit',
-    'FKEY' => [
-      0 => [
-        'TABLE' => 'commande',
-        'COLUMN' => 'idCommande',
-      ],
-      1 => [
-        'TABLE' => 'produit',
-        'COLUMN' => 'idProduit',
-      ],
-    ],
-  ],
-  'commande' => [
-    'KEY' => 'idCommande',
-    'FKEY' => [
-      0 => [
-        'TABLE' => 'client',
-        'COLUMN' => 'idClient',
-      ],
-    ],
-  ],
-  'client' => [
-    'KEY' => 'idClient',
-  ],
-  'produit' => [
-    'KEY' => 'idProduit',
-  ],
-];
-
 $config['tables'] = [
   'commandeProduit' => [
     'idCommandeProduit' => [
@@ -60,6 +27,32 @@ $config['tables'] = [
       ],
       'TYPE' => 'int(11)',
       'IS_NULLABLE' => 'YES',
+      'EXTRA' => '',
+    ],
+  ],
+  'user' => [
+    'id' => [
+      'KEY' => 'PRI',
+      'TYPE' => 'int(11)',
+      'IS_NULLABLE' => 'NO',
+      'EXTRA' => 'auto_increment',
+    ],
+    'username' => [
+      'KEY' => '',
+      'TYPE' => 'varchar(15)',
+      'IS_NULLABLE' => 'NO',
+      'EXTRA' => '',
+    ],
+    'email' => [
+      'KEY' => '',
+      'TYPE' => 'varchar(320)',
+      'IS_NULLABLE' => 'NO',
+      'EXTRA' => '',
+    ],
+    'password' => [
+      'KEY' => '',
+      'TYPE' => 'binary(72)',
+      'IS_NULLABLE' => 'NO',
       'EXTRA' => '',
     ],
   ],
@@ -175,4 +168,40 @@ $config['tables'] = [
     ],
   ],
 ];
+
+$config['tablesId'] = [
+  'commandeProduit' => [
+    'KEY' => 'idCommandeProduit',
+    'FKEY' => [
+      0 => [
+        'TABLE' => 'commande',
+        'COLUMN' => 'idCommande',
+      ],
+      1 => [
+        'TABLE' => 'produit',
+        'COLUMN' => 'idProduit',
+      ],
+    ],
+  ],
+  'user' => [
+    'KEY' => 'id',
+  ],
+  'commande' => [
+    'KEY' => 'idCommande',
+    'FKEY' => [
+      0 => [
+        'TABLE' => 'client',
+        'COLUMN' => 'idClient',
+      ],
+    ],
+  ],
+  'client' => [
+    'KEY' => 'idClient',
+  ],
+  'produit' => [
+    'KEY' => 'idProduit',
+  ],
+];
+
+$config['tablesRegex'] = "(commandeProduits?|users?|commandes?|clients?|produits?)";
 
