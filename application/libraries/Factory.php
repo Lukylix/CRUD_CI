@@ -20,9 +20,10 @@ class Factory
           if (!isset($options[$option])) $options[$option] = $value;
         $this->options = $options;
         $this->tableName = $name;
-        include 'application/config/custom/tables.php';
-        $this->table = $config['tables'][$this->tableName];
-        $this->idName = $config['tablesId'][$this->tableName]['KEY'];
+        $CI = &get_instance();
+        $CI->config->load('custom/tables');
+        $this->table = $CI->config->item('tables')[$this->tableName];
+        $this->idName = $CI->config->item('tablesId')[$this->tableName]['KEY'];
 
         $this->entity = new class ($this->verifyEntityData($data))
         {
@@ -49,8 +50,8 @@ class Factory
       function get()
       {
         if (!$this->asValidId) return ((($this->db()->where($this->options['where']))->or_where($this->options['or_where']))
-          ->get($this->tableName))->{$this->options['single'] ? 'row_array' : 'result_array'}();
-        return ($this->db()->get_where($this->tableName, array($this->idName => $this->entity->__get($this->idName))))->row_array();
+          ->get($this->tableName))->{$this->options['single'] ? 'row' : 'result'}();
+        return ($this->db()->get_where($this->tableName, array($this->idName => $this->entity->__get($this->idName))))->row();
       }
 
       function delete()
@@ -78,5 +79,40 @@ class Factory
         return $result;
       }
     })->action();
+  }
+
+  function getColumns(string $tableName)
+  {
+    $CI = &get_instance();
+    $CI->config->load('custom/tables');
+    $tables = $CI->config->item('tables');
+    if (!isset($tables[$tableName])) return;
+    foreach ($tables[$tableName] as $colmunName => $constrains) {
+      $result[$colmunName] = '';
+    }
+    return $result;
+  }
+
+  //This function need so mutch more stuff ....
+  function formRules(string $tableName)
+  {
+    $CI = &get_instance();
+    $CI->config->load('custom/tables');
+    $entity =  $this->getColumns($tableName);
+    $tablesId = $CI->config->item('tablesId');
+    $tables = $CI->config->item('tables');
+    unset($entity[$tablesId[$tableName]['KEY']]);
+
+    foreach($entity as $column => $value){
+      $rule = 'trim';
+      $constrains = $tables[$tableName][$column];
+      if (isset($tablesId[$tableName][$column]) || preg_match('/NO/',$constrains['IS_NULLABLE']))
+      $rule .= '|required';
+      $types = ['int' => 'numeric'];
+      if ($constrains['TYPE'] != null){
+        
+      }
+      $CI->form_validation->set_rules($column, implode(' ', preg_split('/(?=[A-Z])|[_]/', ucfirst($column))), $rule);
+    }
   }
 }

@@ -1,7 +1,8 @@
 <div class="container">
   <h1><?php echo $title; ?></h1>
-  <?php echo validation_errors();
-  echo (form_open(str_replace('index.php/', '' ,$_SERVER['REQUEST_URI'])));
+    <?= validation_errors('<p style="font-size: 1rem; color:red;">') ?>
+  <?php
+  echo (form_open(str_replace('index.php/', '', $_SERVER['REQUEST_URI'])));
   foreach ($entity as $column => $value) :
   ?>
     <label for="<?= $column ?>"><?= implode(' ', preg_split('/(?=[A-Z])|[_]/', ucfirst($column))); ?></label>

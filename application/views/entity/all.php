@@ -19,9 +19,9 @@
               <td><?php echo $valeur; ?></td>
             <?php
             endforeach; ?>
-            <td><a class="waves-effect waves-light btn-small gray" href="<?php echo '/' . $table['name'] . '/' . $entity[$table['id']] ?>"><i class="material-icons text-white">description</i></a></td>
-            <td><a class="waves-effect waves-light btn-small orange" href="<?php echo '/' . $table['name'] . '/' . $entity[$table['id']] . '/update' ?>"><i class="material-icons tewt-white">edit</i></a></td>
-            <td><a class="waves-effect waves-light btn-small red" href="<?php echo '/' . $table['name'] . '/' . $entity[$table['id']] . '/delete' ?>"><i class="material-icons text-white">delete_forever</i></a></td>
+            <td><a class="waves-effect waves-light btn-small gray" href="<?php echo '/' . $table['name'] . '/' . $entity->{$table['id']} ?>"><i class="material-icons text-white">description</i></a></td>
+            <td><a class="waves-effect waves-light btn-small orange" href="<?php echo '/' . $table['name'] . '/' . $entity->{$table['id']} . '/update' ?>"><i class="material-icons tewt-white">edit</i></a></td>
+            <td><a class="waves-effect waves-light btn-small red" href="<?php echo '/' . $table['name'] . '/' . $entity->{$table['id']} . '/delete' ?>"><i class="material-icons text-white">delete_forever</i></a></td>
           </tr>
         <?php
         endforeach; ?>

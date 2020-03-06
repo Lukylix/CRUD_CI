@@ -15,7 +15,9 @@ class Entity_Controller extends CI_Controller
         $this->load->library('session');
         $this->load->library('Factory');
         $this->load->library('ConfigMaker');
+
         $this->config->load('custom/tables');
+
         $this->tablesId = $this->config->item('tablesId');
         $this->tables = $this->config->item('tables');
     }
@@ -26,7 +28,7 @@ class Entity_Controller extends CI_Controller
         $data['table']['name'] = $entityName;
         $data['table']['id'] = $this->tablesId[$entityName]['KEY'];
 
-        $multipleEntity = isset($data['entities'][0]) || $data['entities'] == [] ? true : false;
+        $multipleEntity = is_array($data['entities'])? true : false;
         $data['title'] = ($multipleEntity ? 'Nos ' . ucfirst($entityName) . 's' : ucfirst($entityName));
         $this->load->view('templates/header', $data);
         $this->load->view(($multipleEntity ? 'entity/all' : 'entity/uniq'));
@@ -43,14 +45,15 @@ class Entity_Controller extends CI_Controller
 
         if ($id > 0) {
             $data['entity'] = $this->factory->model($entityName, [$this->tablesId[$entityName]['KEY'] => $id]);
+            unset($data['entity']->{$this->tablesId[$entityName]['KEY']});
         } else {
-            $data['entity'] =  $this->configmaker->getColumns($entityName);
+            $data['entity'] =  $this->factory->getColumns($entityName);
+            unset($data['entity'][$this->tablesId[$entityName]['KEY']]);
         }
 
-        unset($data['entity'][$this->tablesId[$entityName]['KEY']]);
-        foreach ($data['entity'] as $input => $val) {
-            $this->form_validation->set_rules($input, $input, 'required');
-        }
+        
+        $this->factory->formRules($entityName);
+
         if ($this->form_validation->run() === FALSE) {
             $this->load->view('templates/header', $data);
             $this->load->view("entity/update");
@@ -76,12 +79,10 @@ class Entity_Controller extends CI_Controller
         $this->load->helper('form');
         $this->load->library('form_validation');
         $data['title'] = 'Register';
-        $data['entity'] =  $this->configmaker->getColumns('user');
+        $data['entity'] =  $this->factory->getColumns('user');
         unset($data['entity'][$this->tablesId['user']['KEY']]);
 
-        foreach ($data['entity'] as $input => $val) {
-            $this->form_validation->set_rules($input, $input, 'required');
-        }
+        $this->factory->formRules('user');
         if ($this->form_validation->run() == false) {
             $this->load->view('templates/header', $data);
             $this->load->view('entity/update');
@@ -91,9 +92,9 @@ class Entity_Controller extends CI_Controller
             unset($post['action'], $post['submit']);
             $post['password'] = password_hash($post['password'], PASSWORD_BCRYPT);
             $this->factory->model('user', $post);
-            echo $post['password'];
         }
     }
+
     function login()
     {
         $this->load->helper('form');
@@ -118,6 +119,7 @@ class Entity_Controller extends CI_Controller
             redirect('login');
         }
     }
+
     function logout()
     {
         session_destroy();

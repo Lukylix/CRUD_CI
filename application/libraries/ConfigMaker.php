@@ -86,15 +86,6 @@ class ConfigMaker
     return $result;
   }
 
-  function getColumns(string $tableName)
-  {
-    if (!isset($this->tables[$tableName])) return;
-    foreach ($this->tables[$tableName] as $colmunName => $constrains) {
-      $result[$colmunName] = '';
-    }
-    return $result;
-  }
-
   private function regex()
   {
     $tablesRegex = '(';
